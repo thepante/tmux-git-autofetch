@@ -34,15 +34,42 @@ add_cron_job() {
     fi
 }
 
+# To check when changing directory
+add_shell_hook() {
+    if grep -qE "^[^#]*tmux-git-autofetch/" ~/.zshrc; then
+        echo "Shell hook already exists";
+        return 0;
+    fi
+    script_file_path="$(readlink -f "$0")"
+    cp ~/.zshrc ~/.zshrc.bk_tga &&
+    echo "
+tmux-git-autofetch() {($script_file_path --current &)}
+add-zsh-hook chpwd tmux-git-autofetch
+    " >> ~/.zshrc &&
+    echo "Added shell hook"
+}
+
+install() {
+    add_cron_job
+    add_shell_hook
+    echo "Install is done"
+}
+
 case "$1" in
     "--current")
         check_current ;;
-    "--add-cron")
-        add_cron_job ;;
     "--scan-paths")
         scan_paths ;;
+    "--add-cron")
+        add_cron_job ;;
+    "--add-hook")
+        add_shell_hook ;;
+    "--install")
+        install ;;
+    "")
+        install ;;
     *)
-        echo "Invalid option: $1" >&2
+        echo "Invalid option: [$1]" >&2
         exit 0 ;;
 esac
 
