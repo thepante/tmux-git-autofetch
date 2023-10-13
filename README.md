@@ -4,29 +4,26 @@ This plugin automates the process of fetching updates from remote git repositori
 
 Useful when you deal with git repositories that get frequent updates. Instead of the tedious 'git fetch' routine, this handle it for you in the background.
 
+![demo](demo.gif)
+_(play the gif and look top-right just along with `master`: it fetches and the status got updated)_
+
 ## Installation
 
-Using [`tpm`](https://github.com/tmux-plugins/tpm/): on your `.tmux.conf` source this:
+Using [`tpm`](https://github.com/tmux-plugins/tpm/): on your `.tmux.conf` add this line:
 ```sh
 set -g @plugin 'thepante/tmux-git-autofetch'
 ```
-And install it with `<prefix> + I`
+Afterward, install it by pressing `<prefix> + I`.
 
-Now add a cron job with:
-```sh
-~/.tmux/plugins/tmux-git-autofetch/git-autofetch.tmux --add-cron
-```
+This installation adds a cron job and a zsh hook to automate the fetching process.
 
-Check that it got correctly listed with:
-```sh
-crontab -l
-```
+## Usage
 
-Done. Every 3 minutes, your repositories will now be automatically fetched in background.
+Once installed, your repositories will be automatically fetched in the background every 3 minutes.
 
 ## Notes
-- It only fetches! It doesn't pull. To display the status use whatever you want. Eg: I have [gitmux](https://github.com/arl/gitmux) on my tmux status bar.
-- You can edit the interval: run `crontab -e` and edit the cron frequency. By default every 3 minutes (`*/3`).
-- For private repositories be sure to get properly configured the SSH credentials for them, otherwise could not being fetched.
+- This plugin only fetches updates; it does not perform git pulls nor display info about it.<br>You can display the status using any method you prefer. For instance, you can integrate it with [gitmux](https://github.com/arl/gitmux) for your tmux status bar.
+- You can edit the fetching interval by editing the crontab: `crontab -e` and edit the frequency. Default is every 3 minutes (`*/3`).
+- For private repositories: ensure that your SSH credentials are correctly configured to avoid fetching rejections.
 - Config options would be added soon.
 
