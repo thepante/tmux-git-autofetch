@@ -27,7 +27,7 @@ scan_paths() {
 add_cron_job() {
     script_file_path="$(readlink -f "$0")"
     if ! crontab -l | grep -q "$script_file_path"; then
-        (crontab -l | { cat; echo "*/1 * * * * $script_file_path --scan-paths"; } | crontab -) &&
+        (crontab -l | { cat; echo "*/3 * * * * $script_file_path --scan-paths"; } | crontab -) &&
         echo "Added cron job";
     else
         echo "Cron already exists";
@@ -43,6 +43,6 @@ case "$1" in
         scan_paths ;;
     *)
         echo "Invalid option: $1" >&2
-        exit 1 ;;
+        exit 0 ;;
 esac
 
