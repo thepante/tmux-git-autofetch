@@ -1,25 +1,62 @@
 #!/usr/bin/env bash
 
 PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+conf() (tmux show -gqv "@git-autofetch-$1")
+
+LOGGING=$(conf "logging")
+SKIP_PATHS=$(conf "skip-paths")
+SCAN_PATHS=$(conf "scan-paths")
+SKIP_PATHS=${SKIP_PATHS/\~/$HOME}
+SCAN_PATHS=${SCAN_PATHS/\~/$HOME}
+
+log() {
+    [ ! "$LOGGING" = "true" ] && return 0;
+    local f=${FUNCNAME[1]}
+    local r="$2"
+    local l="/tmp/tmux-git-autofetch.log"
+    [ "$1" = "sep" ] && echo "---" >> $l && return 0;
+    [ "$f" = "path_control" ] && (echo "┌ Patterns => Skip: $SKIP_PATHS - Scan: $SCAN_PATHS") >> $l;
+    local res=$([[ -n "$r" ]] && echo "true" || echo "false")
+    echo "$(date +'%Y-%m-%d-%H:%M:%S') [$f] $1 => $res" >> $l;
+    [ "$f" = "fetch" ] && awk '{sub("^", "├ "); print}' "$1/.git/FETCH_HEAD" >> $l;
+}
+
+fetch() {
+    local res=$(cd "$1" && git fetch -q --all && echo "true")
+    log "$1" "$res"&
+}
+
+path_control() {
+    local pass=0
+    [[ $1 =~ $SKIP_PATHS ]] && pass=1;
+    [[ $1 =~ $SCAN_PATHS ]] && pass=0;
+    log "sep"
+    log "$1" "$([ "$pass" = 0 ] && echo "true")"
+    return "$pass"
+}
 
 path_is_repo() {
-    (cd "$1" && git rev-parse --is-inside-work-tree &>/dev/null)
+    local is_repo=$(cd "$1" && git rev-parse --is-inside-work-tree &>/dev/null && echo "true")
+    log "$1" "$is_repo"
+    [ -n "$is_repo" ]
 }
 
 # Check changed path
 check_current() {
-    if path_is_repo "$(pwd)"; then
-        git fetch -q &
-    fi
+    path=$(pwd)
+    path_control "$path" &&
+    path_is_repo "$path" &&
+    fetch "$path"
 }
 
 # Fetch current opened repositories
 scan_paths() {
     tmux_panes_paths=$(tmux list-windows -F '#{pane_current_path}' | sort | uniq)
     for path in $tmux_panes_paths; do
-        if [ -d $path ] && path_is_repo "$path"; then
-            cd "$path" && git fetch --all;
-        fi
+        [ -d $path ] &&
+        path_control "$path" &&
+        path_is_repo "$path" &&
+        fetch "$path"
     done
 }
 
