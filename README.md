@@ -54,7 +54,7 @@ the `anywhere/probandoski` one.
 
 ## Notes
 - This plugin only fetches updates; it does not perform git pulls nor display info about it.<br>You can display the status using
-- any method you prefer. For instance, you can integrate it with [gitmux](https://github.com/arl/gitmux) for your tmux status bar.
+  any method you prefer. For instance, you can integrate it with [gitmux](https://github.com/arl/gitmux) for your tmux status bar.
 - You can edit the fetching interval by editing the crontab: `crontab -e` and edit the frequency. Default is every 3 minutes
 - (`*/3`). For private repositories: ensure that your SSH credentials are correctly configured to avoid fetching rejections.
 
