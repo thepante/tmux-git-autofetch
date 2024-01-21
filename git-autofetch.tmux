@@ -8,6 +8,7 @@ SKIP_PATHS=$(conf "skip-paths")
 SCAN_PATHS=$(conf "scan-paths")
 SKIP_PATHS=${SKIP_PATHS/\~/$HOME}
 SCAN_PATHS=${SCAN_PATHS/\~/$HOME}
+FETCH_FREQUENCY_MINS=3
 
 log() {
     [ ! "$LOGGING" = "true" ] && return 0;
@@ -35,17 +36,44 @@ path_control() {
     return "$pass"
 }
 
-path_is_repo() {
-    local is_repo=$(cd "$1" && git rev-parse --is-inside-work-tree &>/dev/null && echo "true")
-    log "$1" "$is_repo"
-    [ -n "$is_repo" ]
+get_repo_root() {
+    local path="$1"
+    local repo_root=$(cd "$path" && git rev-parse --show-toplevel 2>/dev/null)
+    echo "$repo_root"
+}
+
+# Control fetch if it's repo & time is reached
+path_should_fetch() {
+    repo_root_path=$(get_repo_root "$1")
+    [ -z "$repo_root_path" ] && exit 1;
+
+    id=$(echo "$repo_root_path" | sed 's|/|_|g')
+    cache_path="/tmp/tmux-git-autofetch-cache/"
+    time_file="$cache_path$id"
+    time_file_new=false
+    [ ! -d "$cache_path" ] && mkdir "$cache_path"
+    [ ! -e "$time_file" ] && { touch "$time_file"; time_file_new=true; }
+
+    now=$(date +%s)
+    scanned=$(date -r "$time_file" "+%s")
+    diff=$((now - scanned))
+    mins_ago=$((diff / 60))
+    should_fetch=$(((mins_ago && mins_ago >= FETCH_FREQUENCY_MINS) || time_file_new))
+
+    if [ "$should_fetch" -eq 1 ]; then
+        log "Checked more than $FETCH_FREQUENCY_MINS minutes ago ($mins_ago: $diff s). Should scan" $should_fetch
+        touch -t "$(date +"%Y%m%d%H%M.%S")" "$time_file"
+    else
+        log "Checked less than $FETCH_FREQUENCY_MINS minutes ago ($mins_ago: $diff s). Skip"
+    fi
+    [ "$should_fetch" -eq 1 ]
 }
 
 # Check changed path
 check_current() {
-    path=$(pwd)
+    path="${1-$(pwd)}"
     path_control "$path" &&
-    path_is_repo "$path" &&
+    path_should_fetch "$path" &&
     fetch "$path"
 }
 
@@ -53,10 +81,7 @@ check_current() {
 scan_paths() {
     tmux_panes_paths=$(tmux list-windows -F '#{pane_current_path}' | sort | uniq)
     for path in $tmux_panes_paths; do
-        [ -d $path ] &&
-        path_control "$path" &&
-        path_is_repo "$path" &&
-        fetch "$path"
+        [ -d $path ] && check_current $path;
     done
 }
 
@@ -64,7 +89,7 @@ scan_paths() {
 add_cron_job() {
     script_file_path="$(readlink -f "$0")"
     if ! crontab -l | grep -q "$script_file_path"; then
-        (crontab -l | { cat; echo "*/3 * * * * $script_file_path --scan-paths"; } | crontab -) &&
+        (crontab -l | { cat; echo "*/1 * * * * $script_file_path --scan-paths"; } | crontab -) &&
         echo "Added cron job";
     else
         echo "Cron already exists";
