@@ -2,7 +2,8 @@
 
 This plugin automates the process of fetching updates from remote git repositories, making your coding life a little bit smoother.
 
-Useful when you deal with git repositories that get frequent updates. Instead of the tedious 'git fetch' routine, this handle it for you in the background.
+Useful when you deal with git repositories that get frequent updates. Instead of the tedious 'git fetch' routine, this handle it
+for you in the background.
 
 ![demo](demo.gif)
 _(play the gif and look top-right just along with `master`: it fetches and the status got updated)_
@@ -48,10 +49,18 @@ Default: `false`<br>
 set -g @git-autofetch-logging "true"
 ```
 
-With the examples provided, it will write the logging file. Also would autofetch only those repositories inside `~/Projects` and the `anywhere/probandoski` one.
+With the examples provided, it will write the logging file. Also would autofetch only those repositories inside `~/Projects` and
+the `anywhere/probandoski` one.
 
 ## Notes
-- This plugin only fetches updates; it does not perform git pulls nor display info about it.<br>You can display the status using any method you prefer. For instance, you can integrate it with [gitmux](https://github.com/arl/gitmux) for your tmux status bar.
-- You can edit the fetching interval by editing the crontab: `crontab -e` and edit the frequency. Default is every 3 minutes (`*/3`).
+- This plugin only fetches updates; it does not perform git pulls nor display info about it.<br>You can display the status using
+  any method you prefer. For instance, you can integrate it with [gitmux](https://github.com/arl/gitmux) for your tmux status bar.
+- You can edit the fetching interval by editing the crontab: `crontab -e` and edit the frequency. Default is every 3 minutes
+  (`*/3`).
 - For private repositories: ensure that your SSH credentials are correctly configured to avoid fetching rejections.
+
+## Motivation
+I work on multiples repositories that are frequently updated. Something that made me still use vscode was just the autofetch
+functionality. I couldn't find a similar solution for the terminal, so I made this plugin to help me work without worry about
+missing some repo state.
 
