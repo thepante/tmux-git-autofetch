@@ -22,6 +22,8 @@ This installation adds a cron job and a zsh hook to automate the fetching proces
 
 Once installed, your open repositories will be automatically fetched in the background every 3 minutes.
 
+---
+
 ## Options
 
 You can add the following options on your tmux config file:
@@ -41,6 +43,14 @@ Default: ` ` (empty)<br>
 set -g @git-autofetch-scan-paths "~/Projects/.*|.*\/probandoski"
 ```
 
+#### `@git-autofetch-frequency`
+
+Set the fetching interval in minutes.<br>
+Default: `3`<br>
+```bash
+set -g @git-autofetch-frequency "1"
+```
+
 #### `@git-autofetch-logging`
 
 Enables or disables debug logging.<br>
@@ -49,18 +59,18 @@ Default: `false`<br>
 set -g @git-autofetch-logging "true"
 ```
 
-With the examples provided, it will write the logging file. Also would autofetch only those repositories inside `~/Projects` and
-the `anywhere/probandoski` one.
+With the examples provided: it will write the logging file, scan every minute, and also would autofetch only those repositories
+inside `~/Projects` and the `anywhere/probandoski` one.
 
 ## Notes
 - This plugin only fetches updates; it does not perform git pulls nor display info about it.<br>You can display the status using
   any method you prefer. For instance, you can integrate it with [gitmux](https://github.com/arl/gitmux) for your tmux status bar.
-- You can edit the fetching interval by editing the crontab: `crontab -e` and edit the frequency. Default is every 3 minutes
-  (`*/3`).
 - For private repositories: ensure that your SSH credentials are correctly configured to avoid fetching rejections.
 
 ## Motivation
-I work on multiples repositories that are frequently updated. Something that made me still use vscode was just the autofetch
-functionality. I couldn't find a similar solution for the terminal, so I made this plugin to help me work without worry about
-missing some repo state.
+I work with multiples repositories that are frequently updated. I sticked with vscode mainly for its auto-fetch feature.
+I haven't come across a comparable solution for the terminal, so I made this plugin for tmux to ensure that I can work without
+concerns about overlooking any changes in the repositories.
+
+Feel free to leave feedback or any other type of contribution.
 
