@@ -42,6 +42,15 @@ get_repo_root() {
   echo "$repo_root"
 }
 
+# Check if we are in tmux
+check_tmux() {
+  if [ "$TERM_PROGRAM" = "tmux" ]; then
+    true
+  else
+    false
+  fi
+}
+
 # Control fetch if it's repo & time is reached
 path_should_fetch() {
   repo_root_path=$(get_repo_root "$1")
@@ -82,10 +91,14 @@ check_current() {
 
 # Fetch current opened repositories
 scan_paths() {
-  tmux_panes_paths=$(tmux list-windows -F '#{pane_current_path}' | sort | uniq)
-  for path in $tmux_panes_paths; do
-    [ -d $path ] && check_current $path
-  done
+  check_tmux
+  tmux_valid=$
+  if [ "$tmux_valid" ]; then
+    tmux_panes_paths=$(tmux list-windows -F '#{pane_current_path}' | sort | uniq)
+    for path in $tmux_panes_paths; do
+      [ -d "$path" ] && check_current "$path"
+    done
+  fi
 }
 
 # Cron job to keep scanning
@@ -109,11 +122,13 @@ add_shell_hook() {
     return 0
   fi
   script_file_path="$(readlink -f "$0")"
+  check_tmux
+  tmux_valid=$
   cp ~/.zshrc ~/.zshrc.bk_tga &&
     echo "
 tmux-git-autofetch() {
 
-if [ \"$TERM_PROGRAM\" = tmux ]; then 
+if [ $tmux_valid ]; then 
   ($script_file_path --current &)
 fi
 
