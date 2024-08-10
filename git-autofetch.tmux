@@ -136,7 +136,9 @@ install() {
 }
 
 # Checks if we are in tmux, and if we are, it will continue to the switch statement
-if [ "$check_tmux" ]; then
+check_tmux
+tmux_valid=$
+if [ "$tmux_valid" ]; then
   case "$1" in
   "--current")
     check_current
