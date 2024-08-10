@@ -55,7 +55,6 @@ check_tmux() {
 path_should_fetch() {
   repo_root_path=$(get_repo_root "$1")
   [ -z "$repo_root_path" ] && exit 1
-
   id=$(echo "$repo_root_path" | sed 's|/|_|g')
   cache_path="/tmp/tmux-git-autofetch-cache/"
   time_file="$cache_path$id"
@@ -91,14 +90,10 @@ check_current() {
 
 # Fetch current opened repositories
 scan_paths() {
-  check_tmux
-  tmux_valid=$
-  if [ "$tmux_valid" ]; then
-    tmux_panes_paths=$(tmux list-windows -F '#{pane_current_path}' | sort | uniq)
-    for path in $tmux_panes_paths; do
-      [ -d "$path" ] && check_current "$path"
-    done
-  fi
+  tmux_panes_paths=$(tmux list-windows -F '#{pane_current_path}' | sort | uniq)
+  for path in $tmux_panes_paths; do
+    [ -d "$path" ] && check_current "$path"
+  done
 }
 
 # Cron job to keep scanning
@@ -122,15 +117,11 @@ add_shell_hook() {
     return 0
   fi
   script_file_path="$(readlink -f "$0")"
-  check_tmux
-  tmux_valid=$
   cp ~/.zshrc ~/.zshrc.bk_tga &&
     echo "
 tmux-git-autofetch() {
 
-if [ $tmux_valid ]; then 
-  ($script_file_path --current &)
-fi
+($script_file_path --current &)
 
 }
 add-zsh-hook chpwd tmux-git-autofetch
@@ -144,27 +135,30 @@ install() {
   echo "Install is done"
 }
 
-case "$1" in
-"--current")
-  check_current
-  ;;
-"--scan-paths")
-  scan_paths
-  ;;
-"--add-cron")
-  add_cron_job
-  ;;
-"--add-hook")
-  add_shell_hook
-  ;;
-"--install")
-  install
-  ;;
-"")
-  install
-  ;;
-*)
-  echo "Invalid option: [$1]" >&2
-  exit 0
-  ;;
-esac
+# Checks if we are in tmux, and if we are, it will continue to the switch statement
+if [ "$check_tmux" ]; then
+  case "$1" in
+  "--current")
+    check_current
+    ;;
+  "--scan-paths")
+    scan_paths
+    ;;
+  "--add-cron")
+    add_cron_job
+    ;;
+  "--add-hook")
+    add_shell_hook
+    ;;
+  "--install")
+    install
+    ;;
+  "")
+    install
+    ;;
+  *)
+    echo "Invalid option: [$1]" >&2
+    exit 0
+    ;;
+  esac
+fi
