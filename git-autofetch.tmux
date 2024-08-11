@@ -135,32 +135,27 @@ install() {
   echo "Install is done"
 }
 
-# Checks if we are in tmux, and if we are, it will continue to the switch statement
-check_tmux
-tmux_valid=$
-if [ "$tmux_valid" ]; then
-  case "$1" in
-  "--current")
-    check_current
-    ;;
-  "--scan-paths")
-    scan_paths
-    ;;
-  "--add-cron")
-    add_cron_job
-    ;;
-  "--add-hook")
-    add_shell_hook
-    ;;
-  "--install")
-    install
-    ;;
-  "")
-    install
-    ;;
-  *)
-    echo "Invalid option: [$1]" >&2
-    exit 0
-    ;;
-  esac
-fi
+case "$1" in
+"--current")
+  check_current
+  ;;
+"--scan-paths")
+  scan_paths
+  ;;
+"--add-cron")
+  add_cron_job
+  ;;
+"--add-hook")
+  add_shell_hook
+  ;;
+"--install")
+  install
+  ;;
+"")
+  install
+  ;;
+*)
+  echo "Invalid option: [$1]" >&2
+  exit 0
+  ;;
+esac
