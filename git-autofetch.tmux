@@ -19,7 +19,7 @@ log() {
   [ "$f" = "path_control" ] && (echo "┌ Patterns => Skip: $SKIP_PATHS - Scan: $SCAN_PATHS") >>$l
   local res=$([[ -n "$r" ]] && echo "true" || echo "false")
   echo "$(date +'%Y-%m-%d-%H:%M:%S') [$f] $1 => $res" >>$l
-  [ "$f" = "fetch" ] && awk '{sub("^", "├ "); print}' "$1/.git/FETCH_HEAD" >>$l
+  [ "$f" = "fetch" ] && echo "├ fetched $(wc -l <"$1/.git/FETCH_HEAD") refs" >>$l
 }
 
 fetch() {
