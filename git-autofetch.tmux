@@ -8,7 +8,8 @@ SKIP_PATHS=$(conf "skip-paths")
 SCAN_PATHS=$(conf "scan-paths")
 SKIP_PATHS=${SKIP_PATHS/\~/$HOME}
 SCAN_PATHS=${SCAN_PATHS/\~/$HOME}
-FETCH_FREQUENCY_MINS=3
+FETCH_FREQUENCY_MINS=$(conf "frequency")
+[ -z "$FETCH_FREQUENCY_MINS" ] && FETCH_FREQUENCY_MINS=3
 
 log() {
   [ ! "$LOGGING" = "true" ] && return 0
