@@ -30,8 +30,8 @@ fetch() {
 
 path_control() {
   local pass=0
-  [[ $1 =~ $SKIP_PATHS ]] && pass=1
-  [[ $1 =~ $SCAN_PATHS ]] && pass=0
+  [ -n "$SCAN_PATHS" ] && { [[ $1 =~ $SCAN_PATHS ]] || pass=1; }
+  [[ -n $SKIP_PATHS && $1 =~ $SKIP_PATHS ]] && pass=1
   log "sep"
   log "$1" "$([ "$pass" = 0 ] && echo "true")"
   return "$pass"
