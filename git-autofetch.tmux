@@ -54,7 +54,7 @@ check_tmux() {
 # Control fetch if it's repo & time is reached
 path_should_fetch() {
   repo_root_path=$(get_repo_root "$1")
-  [ -z "$repo_root_path" ] && exit 1
+  [ -z "$repo_root_path" ] && return 1
   id=$(echo "$repo_root_path" | sed 's|/|_|g')
   cache_path="/tmp/tmux-git-autofetch-cache/"
   time_file="$cache_path$id"
