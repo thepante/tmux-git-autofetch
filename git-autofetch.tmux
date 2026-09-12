@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
 PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
+tmux_running() {
+  [ -n "$TMUX" ] || tmux has-session >/dev/null 2>&1
+}
+tmux_running || exit 0
+
 conf() (tmux show -gqv "@git-autofetch-$1")
 
 LOGGING=$(conf "logging")
@@ -50,15 +56,6 @@ get_repo_root() {
   local path="$1"
   local repo_root=$(cd "$path" && git rev-parse --show-toplevel 2>/dev/null)
   echo "$repo_root"
-}
-
-# Check if we are in tmux
-check_tmux() {
-  if [ "$TERM_PROGRAM" = "tmux" ]; then
-    true
-  else
-    false
-  fi
 }
 
 # Control fetch if it's repo & time is reached
@@ -112,7 +109,7 @@ add_cron_job() {
   if ! crontab -l | grep -q "$script_file_path"; then
     (crontab -l | {
       cat
-      echo "*/1 * * * * pgrep -x \"tmux\" > /dev/null && $script_file_path --scan-paths > /dev/null 2>&1"
+      echo "*/1 * * * * $script_file_path --scan-paths > /dev/null 2>&1"
     } | crontab -) &&
       echo "Added cron job"
   else
