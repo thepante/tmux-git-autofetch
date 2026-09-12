@@ -1,49 +1,60 @@
 # Your Git workflow with automated repository fetching
 
-This plugin automates the process of fetching updates from remote git repositories, making your coding life a little bit smoother.
+A tmux plugin that fetches your open git repositories in the background, so your branch status
+reflects the remote without you running `git fetch`.
 
-Useful when you deal with git repositories that get frequent updates. Instead of the tedious 'git fetch' routine, this handle it
-for you in the background.
+Useful when you work with repositories that get frequent updates.
 
-![demo](demo.gif)
-_(play the gif and look top-right just along with `master`: it fetches and the status got updated)_
+![A tmux pane where git status goes from clean to behind 2 after an automatic fetch](demo.gif)
+
+_look at how the fetch runs in the background between the two `git status` calls: the status bar 
+displays the `↓·2` indicator, and the second call reports the two new commits._
 
 ## Installation
 
-Using [`tpm`](https://github.com/tmux-plugins/tpm/): on your `.tmux.conf` add this line:
-```sh
-set -g @plugin 'thepante/tmux-git-autofetch'
-```
-Afterward, install it by pressing `<prefix> + I`.
+To install the plugin with [tpm](https://github.com/tmux-plugins/tpm/), follow these steps:
 
-This installation adds a cron job and a zsh hook to automate the fetching process.
+1. Add this line to your `.tmux.conf`:
+
+   ```sh
+   set -g @plugin 'thepante/tmux-git-autofetch'
+   ```
+
+2. Press `<prefix> + I`.
+
+The installation adds a cron entry that scans every minute while tmux runs, and appends a hook to
+your `~/.zshrc`. It copies your previous `~/.zshrc` to `~/.zshrc.bk_tga` before adding the hook.
 
 ## Usage
 
-Once installed, your open repositories will be automatically fetched in the background every 3 minutes.
-
----
+After you install it, the plugin fetches the repositories open in your tmux panes every 3 minutes.
+It also fetches when you change directory into a repository.
 
 ## Options
 
-You can add the following options on your tmux config file:
+Add any of these options to your tmux config file:
 
-#### `@git-autofetch-skip-paths`
+| Option | Description | Default |
+| --- | --- | --- |
+| `@git-autofetch-scan-paths` | Restricts autofetch to the paths that match this regex. When empty, every path is autofetched. | Empty |
+| `@git-autofetch-skip-paths` | Skips the paths that match this regex. When empty, nothing is skipped. | Empty |
+| `@git-autofetch-frequency` | Sets the fetch interval in minutes. | `3` |
+| `@git-autofetch-logging` | Writes a debug log to `/tmp/tmux-git-autofetch.log`. | `false` |
 
-Defines regex pattern to skip specific paths to autofetch.<br>
-Default: empty (nothing is skipped)<br>
-```bash
-set -g @git-autofetch-skip-paths "~/Projects/vendor/.*"
-```
-#### `@git-autofetch-scan-paths`
+For example:
 
-Defines regex pattern for the only paths to autofetch: once set, a path that doesn't match it is skipped.<br>
-Default: empty (every path is autofetched)<br>
-```bash
+```sh
 set -g @git-autofetch-scan-paths "~/Projects/.*|.*\/probandoski"
+set -g @git-autofetch-skip-paths "~/Projects/vendor/.*"
+set -g @git-autofetch-frequency "1"
+set -g @git-autofetch-logging "true"
 ```
 
-##### Path matching
+That config writes the log, scans every minute, and autofetches only the repositories under
+`~/Projects` and any path that contains `/probandoski`, leaving out the ones under
+`~/Projects/vendor`.
+
+### Path matching
 
 - Both patterns match against the current directory of each tmux pane, not against the root of the
   repository that directory belongs to.
@@ -57,33 +68,34 @@ While `scan-paths` is set, a catch-all `skip-paths ".*"` is ignored, because the
 everything". If your config has that pair, drop the `skip-paths` line: `scan-paths` alone does the
 job.
 
-#### `@git-autofetch-frequency`
+## Uninstall
 
-Set the fetching interval in minutes.<br>
-Default: `3`<br>
-```bash
-set -g @git-autofetch-frequency "1"
-```
+Removing the plugin from your `.tmux.conf` stops tmux from loading it, but the cron entry and the
+shell hook stay in place. To remove them, follow these steps:
 
-#### `@git-autofetch-logging`
+1. Delete the `tmux-git-autofetch` line from your crontab:
 
-Enables or disables debug logging.<br>
-Default: `false`<br>
-```bash
-set -g @git-autofetch-logging "true"
-```
+   ```sh
+   crontab -e
+   ```
 
-With the examples provided: it will write the logging file, scan every minute, and also would autofetch only those repositories
-inside `~/Projects` and the `anywhere/probandoski` one, leaving out the ones under `~/Projects/vendor`.
+2. Delete the `tmux-git-autofetch` function and its `add-zsh-hook` line from your `~/.zshrc`.
+3. Optional: Delete the cache directory and the log file:
+
+   ```sh
+   rm -r /tmp/tmux-git-autofetch-cache /tmp/tmux-git-autofetch.log
+   ```
 
 ## Notes
-- This plugin only fetches updates; it does not perform git pulls nor display info about it.<br>You can display the status using
-  any method you prefer. For instance, you can integrate it with [gitmux](https://github.com/arl/gitmux) for your tmux status bar.
-- For private repositories: ensure that your SSH credentials are correctly configured to avoid fetching rejections.
+
+- This plugin only fetches: it doesn't pull, and it doesn't display the result. To show the branch
+  status in your tmux status bar, use a tool such as [gitmux](https://github.com/arl/gitmux).
+- For private repositories, configure your SSH credentials so the remote doesn't reject the fetch.
 
 ## Motivation
-I work with multiples repositories that are frequently updated. I sticked with vscode mainly for its auto-fetch feature.
-I haven't come across a comparable solution for the terminal, so I made this plugin for tmux to ensure that I can work without
-concerns about overlooking any changes in the repositories.
 
-Feel free to leave feedback or any other type of contribution.
+I work with multiple repositories that get updated frequently, and vscode's autofetch was the
+feature that kept me there. I found no equivalent for the terminal, so I wrote this plugin to work
+in tmux without missing changes in a repository.
+
+Feedback and contributions are welcome.
