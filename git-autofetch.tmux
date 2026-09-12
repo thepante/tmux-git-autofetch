@@ -6,8 +6,8 @@ conf() (tmux show -gqv "@git-autofetch-$1")
 LOGGING=$(conf "logging")
 SKIP_PATHS=$(conf "skip-paths")
 SCAN_PATHS=$(conf "scan-paths")
-SKIP_PATHS=${SKIP_PATHS/\~/$HOME}
-SCAN_PATHS=${SCAN_PATHS/\~/$HOME}
+SKIP_PATHS=${SKIP_PATHS//\~/$HOME}
+SCAN_PATHS=${SCAN_PATHS//\~/$HOME}
 FETCH_FREQUENCY_MINS=$(conf "frequency")
 [ -z "$FETCH_FREQUENCY_MINS" ] && FETCH_FREQUENCY_MINS=3
 
@@ -30,8 +30,8 @@ fetch() {
 
 path_control() {
   local pass=0
-  [[ $1 =~ $SKIP_PATHS ]] && pass=1
-  [[ $1 =~ $SCAN_PATHS ]] && pass=0
+  [[ -n $SKIP_PATHS && $1 =~ $SKIP_PATHS ]] && pass=1
+  [[ -n $SCAN_PATHS && $1 =~ $SCAN_PATHS ]] && pass=0
   log "sep"
   log "$1" "$([ "$pass" = 0 ] && echo "true")"
   return "$pass"
