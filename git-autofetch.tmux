@@ -92,9 +92,9 @@ check_current() {
 # Fetch current opened repositories
 scan_paths() {
   tmux_panes_paths=$(tmux list-panes -a -F '#{pane_current_path}' | sort | uniq)
-  for path in $tmux_panes_paths; do
+  while IFS= read -r path; do
     [ -d "$path" ] && check_current "$path"
-  done
+  done <<<"$tmux_panes_paths"
 }
 
 # Cron job to keep scanning
