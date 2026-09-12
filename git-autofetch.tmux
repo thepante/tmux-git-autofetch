@@ -8,6 +8,15 @@ SKIP_PATHS=$(conf "skip-paths")
 SCAN_PATHS=$(conf "scan-paths")
 SKIP_PATHS=${SKIP_PATHS//\~/$HOME}
 SCAN_PATHS=${SCAN_PATHS//\~/$HOME}
+
+# Before scan-paths became an allowlist, the documented way to get one was a
+# catch-all skip-paths beside it. That pairing now means "skip everything", so
+# drop the catch-all and keep what the config was written to mean.
+if [ -n "$SCAN_PATHS" ] && [ -n "$SKIP_PATHS" ] &&
+  [[ /0000 =~ $SKIP_PATHS ]] && [[ /zzzz =~ $SKIP_PATHS ]]; then
+  SKIP_PATHS=""
+fi
+
 FETCH_FREQUENCY_MINS=$(conf "frequency")
 [ -z "$FETCH_FREQUENCY_MINS" ] && FETCH_FREQUENCY_MINS=3
 

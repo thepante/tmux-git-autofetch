@@ -31,17 +31,31 @@ You can add the following options on your tmux config file:
 #### `@git-autofetch-skip-paths`
 
 Defines regex pattern to skip specific paths to autofetch.<br>
-Default: ` ` (empty)<br>
+Default: empty (nothing is skipped)<br>
 ```bash
-set -g @git-autofetch-skip-paths ".*"
+set -g @git-autofetch-skip-paths "~/Projects/vendor/.*"
 ```
 #### `@git-autofetch-scan-paths`
 
-Defines regex pattern for paths to enable autofetching. Higher priority than `skip-paths` pattern.<br>
-Default: ` ` (empty)<br>
+Defines regex pattern for the only paths to autofetch: once set, a path that doesn't match it is skipped.<br>
+Default: empty (every path is autofetched)<br>
 ```bash
 set -g @git-autofetch-scan-paths "~/Projects/.*|.*\/probandoski"
 ```
+
+##### Path matching
+
+- Both patterns match against the current directory of each tmux pane, not against the root of the
+  repository that directory belongs to.
+- `skip-paths` applies on top of `scan-paths`: a path allowed by `scan-paths` is still skipped when
+  `skip-paths` matches it. Combine both to enable a whole tree and carve exceptions out of it.
+- A pattern matches anywhere in the path, not end to end: `probandoski` also matches
+  `/tmp/probandoski-old/src`. Anchor it with `^` and `$` to match the whole path.
+- A `~` expands to your home directory.
+
+While `scan-paths` is set, a catch-all `skip-paths ".*"` is ignored, because the pair reads as "skip
+everything". If your config has that pair, drop the `skip-paths` line: `scan-paths` alone does the
+job.
 
 #### `@git-autofetch-frequency`
 
@@ -60,7 +74,7 @@ set -g @git-autofetch-logging "true"
 ```
 
 With the examples provided: it will write the logging file, scan every minute, and also would autofetch only those repositories
-inside `~/Projects` and the `anywhere/probandoski` one.
+inside `~/Projects` and the `anywhere/probandoski` one, leaving out the ones under `~/Projects/vendor`.
 
 ## Notes
 - This plugin only fetches updates; it does not perform git pulls nor display info about it.<br>You can display the status using
@@ -73,4 +87,3 @@ I haven't come across a comparable solution for the terminal, so I made this plu
 concerns about overlooking any changes in the repositories.
 
 Feel free to leave feedback or any other type of contribution.
-
