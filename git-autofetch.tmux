@@ -68,11 +68,11 @@ path_should_fetch() {
   id=$(echo "$repo_root_path" | sed 's|/|_|g')
   cache_path="/tmp/tmux-git-autofetch-cache/"
   time_file="$cache_path$id"
-  time_file_new=false
+  time_file_new=0
   [ ! -d "$cache_path" ] && mkdir "$cache_path"
   [ ! -e "$time_file" ] && {
     touch "$time_file"
-    time_file_new=true
+    time_file_new=1
   }
 
   now=$(date +%s)
