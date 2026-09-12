@@ -39,7 +39,9 @@ log() {
 }
 
 fetch() {
-  local res=$(cd "$1" && git fetch -q --all && echo "true")
+  local errlog=/dev/null
+  [ "$LOGGING" = "true" ] && errlog=/tmp/tmux-git-autofetch.log
+  local res=$(cd "$1" && git fetch -q --all 2>>"$errlog" && echo "true")
   log "$1" "$res" &
 }
 
